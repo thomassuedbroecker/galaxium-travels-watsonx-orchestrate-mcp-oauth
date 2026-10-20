@@ -42,7 +42,8 @@ All other secrets (Keycloak admin password, OAuth2 client secret, Flask secret) 
 | Infrastructure repo cloned into `infrastructure/` | Yes | **No** |
 | You provide | `IBM_CLOUD_API_KEY` | `deploy.env.oauth2` + `deployment-links.env` from the deployer |
 | Script | `deploy_code_engine_oauth2.sh` | `import_existing_deployment.sh` |
-| Details | [Guide 1.1 – 1.6](./1-galaxium_setup.md) | [Guide 1.7](./1-galaxium_setup.md) |
+| First step | Clone the infrastructure repo at `v6.2.3` ([Guide 1.2](./1-galaxium_setup.md)) | Copy the deployer's files, do not clone |
+| Details | [Guide 1.1 – 1.7](./1-galaxium_setup.md) | [Guide 1.8](./1-galaxium_setup.md) |
 
 Both paths write `infrastructure/galaxium-endpoints.env`. Everything after that is identical. See [infrastructure/README.md](./infrastructure/README.md).
 
@@ -52,6 +53,9 @@ Both paths write `infrastructure/galaxium-endpoints.env`. Everything after that 
 cp watsonx-orchestrate-adk/.env_template watsonx-orchestrate-adk/.env   # set WXO_API_KEY, WXO_URL
 
 # Path A: deploy from scratch
+(cd infrastructure \
+  && git clone https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro.git \
+  && cd galaxium-travels-infrastructure-tsuedbro && git checkout v6.2.3)  # first step: clone the infrastructure repo
 cp infrastructure/.env_template infrastructure/.env                      # set IBM_CLOUD_API_KEY
 bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh
 
