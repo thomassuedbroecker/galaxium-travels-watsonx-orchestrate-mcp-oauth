@@ -41,7 +41,7 @@ curl -fsS "${GALAXIUM_MCP_BASE_URL}/.well-known/oauth-authorization-server" \
 ```
 
 Expected: `grant_types_supported` contains `client_credentials` and does **not** contain `implicit`.
-watsonx Orchestrate does not support the implicit flow.
+The watsonx Orchestrate [connections overview](https://developer.watson-orchestrate.ibm.com/connections/overview) lists *OAuth (Implicit)* as not supported for Remote MCP Toolkits, and the infrastructure repository disables the implicit flow for security reasons. This check reads the MCP server's metadata only. It does not test watsonx Orchestrate.
 
 ## 2.4 Request A `client_credentials` Token
 
@@ -104,7 +104,8 @@ Expected: `HTTP 200` and the list of flights.
 | `401` without a token | Expected | Send `Authorization: Bearer <token>` |
 | `401` with a token | Token expired, or issuer mismatch | Request a new token from `GALAXIUM_TOKEN_URL` |
 | Token request returns `401` | Client secret differs from the Keycloak realm | Re-run the deployment so the realm is imported with the generated secret |
-| Timeout on the first call | Application scaled to zero | Retry after a few seconds |
+| Timeout on the first call | MCP server scaled to zero (cold start) | Retry after a few seconds |
 | `initialize` works, `tools/list` fails | Wrong session | Reuse the exact `mcp-session-id` from `initialize` |
+| Any other server-side error | See what the MCP server logged | `bash infrastructure/inspect_code_engine.sh log-follow galaxium-booking-mcp` (needs `kubectl`, see [infrastructure/README.md](./infrastructure/README.md)) |
 
 ## [Home](./README.md)

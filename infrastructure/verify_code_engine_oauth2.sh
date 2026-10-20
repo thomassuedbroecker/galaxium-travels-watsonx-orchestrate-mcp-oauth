@@ -25,7 +25,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is not installed."
 [[ -f "${ENDPOINTS_FILE}" ]] || fail "missing ${ENDPOINTS_FILE}. Run deploy_code_engine_oauth2.sh (new stack) or import_existing_deployment.sh (existing stack) first."
 set -a; source "${ENDPOINTS_FILE}"; set +a
 
-# 1. Unauthenticated access must be rejected (first call may wake a scaled-to-zero app)
+# 1. Unauthenticated access must be rejected (first call may wake the MCP server, which scales to zero; Keycloak stays up)
 STEP_OUT="${TMP_OUT}" run_step 100 "1/5 call MCP without token (may wake Code Engine)" curl -s -o /dev/null -w '%{http_code}' --max-time 90 -X POST "${GALAXIUM_MCP_URL}" "${MCP_HEADERS[@]}" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' || true
 status="$(cat "${TMP_OUT}")"

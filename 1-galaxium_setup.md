@@ -15,7 +15,8 @@ release `v6.2.3` (Code Engine Path B, OAuth2).
 
 > **Cost notice:** Deploying the stack creates billable resources on IBM Cloud Code Engine.
 > Charges apply for build time (one-time, Path A only), running application instances (vCPU-hours + GB-hours),
-> and incoming HTTP requests. Applications scale to zero when idle, so there is no charge between test sessions.
+> and incoming HTTP requests. The MCP server, APIs and web UIs scale to zero when idle, but **Keycloak is kept running
+> (`min-scale 1`)**, so there is a continuous charge between test sessions until you tear the stack down.
 > Run the teardown script (§1.6) when you are done. For a full breakdown see the
 > [Cost Estimate section in the README](./README.md#cost-estimate).
 
@@ -28,6 +29,7 @@ release `v6.2.3` (Code Engine Path B, OAuth2).
 | `ibmcloud` CLI | `curl -fsSL https://clis.cloud.ibm.com/install/osx \| sh` (Linux: `.../install/linux`) |
 | Code Engine plugin | `ibmcloud plugin install code-engine` |
 | `git`, `curl`, `jq`, `python3` | `brew install jq` on macOS |
+| `kubectl` (optional) | Only for `infrastructure/inspect_code_engine.sh` (pods and logs) |
 
 No container runtime is needed. Code Engine builds the images from source
 (`DEPLOY_ARTIFACT_MODE=source_build`, the default of the infrastructure repository).
@@ -166,9 +168,13 @@ Why both: the export has the public URLs but never a secret. `deploy.env.oauth2`
 secret (and the client ID, realm and app names) but not the URLs. Together they contain everything
 the later guides need.
 
-Store the copied `deploy.env.oauth2` as `infrastructure/deploy.env.oauth2`. It is git-ignored.
+Store both copied files in the `infrastructure/` folder of this repository. Both are git-ignored:
+
+- `infrastructure/deploy.env.oauth2`
+- `infrastructure/deployment-links.env`
+
 Only `OIDC_CLIENT_SECRET` (and optionally `OIDC_CLIENT_ID`,
-`KEYCLOAK_REALM`) is read from it. Do not paste its content into chats or commits.
+`KEYCLOAK_REALM`) is read from `deploy.env.oauth2`. Do not paste its content into chats or commits.
 
 If the other repository has no export yet, create it there (needs `ibmcloud` login or
 `IBM_CLOUD_API_KEY` in `deploy.env.oauth2`):
@@ -182,9 +188,12 @@ bash export-deployment.sh --oauth2
 
 ```sh
 bash infrastructure/path-b-existing/import_existing_deployment.sh \
-  --links <path-to>/deployment-links.env \
+  --links infrastructure/deployment-links.env \
   --deploy-env infrastructure/deploy.env.oauth2
 ```
+
+`--links` accepts any path. `infrastructure/deployment-links.env` is the recommended location because
+`inspect_code_engine.sh` also reads it. This route needs **no** `IBM_CLOUD_API_KEY`.
 
 The client secret is taken in this order: `GALAXIUM_OIDC_CLIENT_SECRET`, then
 `OIDC_CLIENT_SECRET` from `--deploy-env`, otherwise the script asks for it (hidden input).
@@ -199,7 +208,7 @@ MCP_BASE_URL=https://<mcp-app>...codeengine.appdomain.cloud
 
 ### Alternative — read the URLs from the Code Engine project
 
-No export file needed. Needs `ibmcloud` with the code-engine plugin. `IBM_CLOUD_API_KEY`,
+No export file needed. Needs `ibmcloud` with the code-engine plugin and **an `IBM_CLOUD_API_KEY`** that can access the project. `IBM_CLOUD_API_KEY`,
 `IBM_CLOUD_REGION`, `IBM_CLOUD_RESOURCE_GROUP`, `CE_PROJECT_NAME`, `KEYCLOAK_APP_NAME` and
 `MCP_APP_NAME` come from `--deploy-env` or from `infrastructure/.env`
 (defaults: `us-south`, `default`, `galaxium-travels-oauth2`, `galaxium-keycloak`, `galaxium-booking-mcp`).

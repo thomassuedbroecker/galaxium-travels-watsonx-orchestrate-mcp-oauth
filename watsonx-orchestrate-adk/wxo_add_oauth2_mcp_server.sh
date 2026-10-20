@@ -26,7 +26,7 @@ echo "MCP_URL:      ${GALAXIUM_MCP_URL}"
 echo "TOOLKIT_NAME: ${TOOLKIT_NAME}"
 
 # The toolkit import calls tools/list on the live server. Wake up Code Engine first
-# (apps scale to zero) so the import does not run into a cold-start timeout.
+# (the MCP server scales to zero, Keycloak stays up) so the import does not run into a cold-start timeout.
 wxo_info "Warm up the Code Engine applications"
 wxo_run 100 "warm up Keycloak" curl -s -o /dev/null --max-time 90 "${GALAXIUM_KEYCLOAK_URL}/realms/galaxium/.well-known/openid-configuration" || true
 wxo_run 100 "warm up MCP server" curl -s -o /dev/null --max-time 90 "${GALAXIUM_MCP_BASE_URL}/.well-known/oauth-protected-resource" || true
@@ -35,7 +35,7 @@ wxo_info "1/3 Create the connection"
 wxo_run 90 "connections remove ${APP_ID} (ignored if it does not exist)" orchestrate connections remove --app-id "${APP_ID}" || true
 wxo_run 90 "connections add ${APP_ID}" orchestrate connections add --app-id "${APP_ID}"
 
-# watsonx Orchestrate does NOT support the OAuth2 implicit flow for remote MCP toolkits.
+# watsonx Orchestrate does NOT support OAuth (Implicit) for Remote MCP Toolkits (see https://developer.watson-orchestrate.ibm.com/connections/overview).
 # Use oauth_auth_client_credentials_flow (machine-to-machine).
 wxo_info "2/3 Configure and set the credentials (draft and live)"
 for environment in draft live; do

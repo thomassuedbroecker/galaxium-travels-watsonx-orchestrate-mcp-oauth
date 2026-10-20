@@ -35,7 +35,7 @@ the MCP server directly. No LAN IP, VM networking or issuer rewriting is needed.
 
 | Setting | Value |
 |---|---|
-| Connection `--kind` | `oauth_auth_client_credentials_flow` (the implicit flow is **not** supported) |
+| Connection `--kind` | `oauth_auth_client_credentials_flow` (*OAuth (Implicit)* is **not supported for Remote MCP Toolkits**, see the [connections overview](https://developer.watson-orchestrate.ibm.com/connections/overview)) |
 | Connection `--type` | `team` |
 | Environments | `draft` and `live` (both configured) |
 | Toolkit `--transport` | `streamable_http` |
@@ -67,6 +67,7 @@ set -a
 source watsonx-orchestrate-adk/.env
 source infrastructure/galaxium-endpoints.env
 set +a
+orchestrate env remove --name galaxium-remote   # ignore the error if it does not exist yet; answer y if asked
 orchestrate env add --name galaxium-remote --url "${WXO_URL}"
 orchestrate env activate galaxium-remote --api-key "${WXO_API_KEY}"
 export APP_ID="galaxium_mcp_oauth2_server"
@@ -161,11 +162,12 @@ Only the three Galaxium resources are removed. Your remote access configuration
 | Symptom | Cause | Fix |
 |---|---|---|
 | Import fails with an authentication error | Wrong client secret or token URL | Re-run `infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh endpoints` (Path A) or `infrastructure/path-b-existing/import_existing_deployment.sh` (Path B), then this script |
-| Import fails with a timeout | Code Engine cold start | Re-run the script |
+| Import fails with a timeout | Cold start of the MCP server (Code Engine) | Re-run the script |
 | `Invalid issuer` / `Invalid audience` in the MCP logs | Keycloak URL changed after the deployment | Re-deploy (`infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh`, or ask the deployer on Path B) so issuer and audience are re-derived |
 | Agent import fails on `llm` | Model not available | Pick a model from `orchestrate models list` |
 | Agent answers without calling a tool | Tool names not found | Check `orchestrate tools list`; names must be `galaxium_travels_booking_mcp_oauth2:<tool>` |
 | `set-credentials` rejects `--token-url` | Older ADK | Install `ibm-watsonx-orchestrate` `2.18.2` or later |
+| Unclear why the MCP server rejects a call | Server-side details are only in the Code Engine logs | `bash infrastructure/inspect_code_engine.sh log-follow galaxium-booking-mcp` |
 
 References:
 
