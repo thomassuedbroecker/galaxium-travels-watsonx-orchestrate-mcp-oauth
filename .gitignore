@@ -1,0 +1,21 @@
+# Secrets and generated files
+.env
+.envrc
+galaxium-endpoints.env
+deploy.env.oauth2
+infrastructure/galaxium-travels-infrastructure-tsuedbro/
+infrastructure/path-b-existing/deployment-links.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Generated
+infrastructure/deployment-links.env
+infrastructure/logs
