@@ -2,9 +2,10 @@
 
 This guide covers two paths:
 
-- **Path A — Deploy from scratch** (§1.1 – §1.6): provision Keycloak, the Booking MCP server,
-  the Booking REST API, the HR API and both web UIs on IBM Code Engine with one script.
-- **Path B — Already deployed from another repository** (§1.7): the infrastructure repository is
+- **Path A — Deploy from scratch** (§1.1 – §1.7): clone the infrastructure repository first, then
+  provision Keycloak, the Booking MCP server, the Booking REST API, the HR API and both web UIs
+  on IBM Code Engine with one script.
+- **Path B — Already deployed from another repository** (§1.8): the infrastructure repository is
   **not** cloned here. You copy the deployer's `deploy.env.oauth2` and the `deployment-links.env`
   export, and `import_existing_deployment.sh` writes `galaxium-endpoints.env`.
 
@@ -15,7 +16,7 @@ release `v6.2.3` (Code Engine Path B, OAuth2).
 > **Cost notice:** Deploying the stack creates billable resources on IBM Cloud Code Engine.
 > Charges apply for build time (one-time, Path A only), running application instances (vCPU-hours + GB-hours),
 > and incoming HTTP requests. Applications scale to zero when idle, so there is no charge between test sessions.
-> Run the teardown script (§1.5) when you are done. For a full breakdown see the
+> Run the teardown script (§1.6) when you are done. For a full breakdown see the
 > [Cost Estimate section in the README](./README.md#cost-estimate).
 
 ## 1.1 Prerequisites
@@ -31,9 +32,35 @@ release `v6.2.3` (Code Engine Path B, OAuth2).
 No container runtime is needed. Code Engine builds the images from source
 (`DEPLOY_ARTIFACT_MODE=source_build`, the default of the infrastructure repository).
 
-## 1.2 Configure (One Value)
+## 1.2 Clone The Infrastructure Repository (First Step Of Path A)
 
-Then create the infrastructure settings:
+This guide is written for release `v6.2.3` of the infrastructure repository.
+
+From the root of this repository:
+
+```sh
+cd infrastructure
+git clone https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro.git
+cd galaxium-travels-infrastructure-tsuedbro
+git checkout v6.2.3
+cd ../..
+```
+
+If you already cloned it earlier, just enter the directory and check out the release:
+
+```sh
+cd infrastructure/galaxium-travels-infrastructure-tsuedbro
+git fetch --tags
+git checkout v6.2.3
+cd ../..
+```
+
+The clone is git-ignored. The deploy script (§1.4) performs the same clone and checkout if the
+directory is missing, so this step is safe to repeat and lets you inspect the upstream scripts first.
+
+## 1.3 Configure (One Value)
+
+Create the infrastructure settings:
 
 ```sh
 cp infrastructure/.env_template infrastructure/.env
@@ -42,7 +69,7 @@ cp infrastructure/.env_template infrastructure/.env
 Edit `infrastructure/.env` and set **only** `IBM_CLOUD_API_KEY`.
 Region (`us-south`), resource group (`default`) and project name (`galaxium-travels-oauth2`) have defaults.
 
-## 1.3 Deploy
+## 1.4 Deploy
 
 ```sh
 bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh
@@ -50,7 +77,7 @@ bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh
 
 What the script does:
 
-1. Clones the infrastructure repository to `infrastructure/galaxium-travels-infrastructure-tsuedbro` and checks out `v6.2.3`.
+1. Uses the clone from §1.2 (clones it if missing) and checks out `v6.2.3`.
 2. Creates `deploy.env.oauth2` from the template and **generates** the Keycloak admin password, the OAuth2 client secret, the Flask secret and the demo user password.
 3. Replaces the demo secrets in the cloned Keycloak realm file (client secret, demo user password, `booking-api` secret) with generated values, because the realm is imported into Keycloak at deployment time and the client secret must match `OIDC_CLIENT_SECRET`.
 4. Runs the upstream `deploy-stack-oauth2.sh` (steps `00 → 06`): project, secrets, Keycloak, services, Keycloak client sync, summary.
@@ -63,7 +90,7 @@ The first deployment takes several minutes. Add `CE_DEBUG=1` in front of the com
 > URL and the upstream scripts derive `OIDC_ISSUER`, the JWKS URL and the token URL from the real
 > Keycloak URL. Nothing has to be configured by hand.
 
-## 1.4 Result: `galaxium-endpoints.env`
+## 1.5 Result: `galaxium-endpoints.env`
 
 | Variable | Used for |
 |---|---|
@@ -77,7 +104,7 @@ The first deployment takes several minutes. Add `CE_DEBUG=1` in front of the com
 If a Code Engine URL changes, rewrite the file with
 `bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh endpoints`.
 
-## 1.5 Other Actions
+## 1.6 Other Actions
 
 ```sh
 bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh prepare     # clone + generate env file only
@@ -108,7 +135,7 @@ Teardown (keeps the Code Engine project, deletes applications, configmaps and se
 bash infrastructure/galaxium-travels-infrastructure-tsuedbro/deployment/ibm-code-engine/teardown-stack-oauth2.sh
 ```
 
-## 1.6 Common Problems
+## 1.7 Common Problems
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -119,10 +146,10 @@ bash infrastructure/galaxium-travels-infrastructure-tsuedbro/deployment/ibm-code
 
 Reference: `deployment/ibm-code-engine/DEPLOY-PATH-B-OAUTH2.md` in the infrastructure repository.
 
-## 1.7 Already Deployed — Use A Deployment From Another Repository
+## 1.8 Already Deployed — Use A Deployment From Another Repository
 
 If the stack is already running (deployed by someone else, or from another repository), skip
-§1.2 – §1.3 and do **not** clone the infrastructure repository here. You only need
+§1.2 – §1.4 and do **not** clone the infrastructure repository here. You only need
 `infrastructure/galaxium-endpoints.env`, which
 [`import_existing_deployment.sh`](./infrastructure/path-b-existing/import_existing_deployment.sh) creates.
 

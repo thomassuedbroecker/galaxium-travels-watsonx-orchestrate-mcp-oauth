@@ -5,7 +5,7 @@ watsonx Orchestrate instance with the OAuth 2.0 `client_credentials` flow, and i
 booking example agent.
 
 Use it after [1-galaxium_setup.md](./1-galaxium_setup.md) (either Path A — deploy from scratch,
-or Path B — already deployed via §1.7) and
+or Path B — already deployed via §1.8) and
 [3-watsonx-orchestrate-adk-setup.md](./3-watsonx-orchestrate-adk-setup.md).
 
 Both paths produce the same `infrastructure/galaxium-endpoints.env` file. This guide reads
