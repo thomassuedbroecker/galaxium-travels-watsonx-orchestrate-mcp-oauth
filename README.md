@@ -86,7 +86,7 @@ graph LR
 | Booking REST API, HR API | Code Engine, scale to zero | Deployed by the infrastructure repository. **Not called by the MCP server** and not used in this guide. |
 | Two web UIs | Code Engine, scale to zero | Deployed by the infrastructure repository, not used here |
 
-The MCP tool data is stored in the MCP server's own SQLite file (checked in the upstream repository at `v6.2.3`), so bookings are not shared with the Booking REST API and are lost when the MCP container restarts.
+The MCP tool data is stored in the MCP server's own SQLite file (checked in the upstream repository at `v6.2.4`), so bookings are not shared with the Booking REST API and are lost when the MCP container restarts.
 
 ## Why These Choices (Mini ADR)
 
@@ -98,7 +98,7 @@ The MCP tool data is stored in the MCP server's own SQLite file (checked in the 
 |---|---|---|
 | OAuth2 `client_credentials` | Machine-to-machine, no user or browser. Two independent reasons rule out the implicit flow: (1) the watsonx Orchestrate [connections overview](https://developer.watson-orchestrate.ibm.com/connections/overview) marks *OAuth (Implicit)* as **not supported for Remote MCP Toolkits** (partial for Python and OpenAPI tools), while *Client Credentials* is supported; (2) the infrastructure repository disables it for security (RFC 9700), see its `docs/mcp_access_options.md`. [Guide 2.3](./2-galaxium_oauth2_mcp_verification.md) checks that the MCP server does not advertise `implicit`. It does not test watsonx Orchestrate. | Implicit flow (not supported for remote MCP toolkits, disabled upstream), Basic Auth (out of scope for this guide) |
 | IBM Code Engine | Every application gets a public HTTPS URL, so watsonx Orchestrate reaches Keycloak and the MCP server directly. The token `iss` matches the real Keycloak URL, so no LAN IP or issuer rewriting is needed. Builds run from source, so no local container runtime. Apart from Keycloak, applications scale to zero when idle. | Local containers and the Developer Edition (out of scope) |
-| Keycloak | It is the identity provider shipped with the infrastructure repository (`v6.2.3`), so the realm and client are created by the deployment. It is kept at `min-scale 1` so tokens can always be issued and keys fetched. | Other identity providers were not evaluated in this repository |
+| Keycloak | It is the identity provider shipped with the infrastructure repository (`v6.2.4`), so the realm and client are created by the deployment. It is kept at `min-scale 1` so tokens can always be issued and keys fetched. | Other identity providers were not evaluated in this repository |
 
 **Consequences:**
 
@@ -133,7 +133,7 @@ All other secrets (Keycloak admin password, OAuth2 client secret, Flask secret) 
 | You provide | `IBM_CLOUD_API_KEY` | `deploy.env.oauth2` + `deployment-links.env` from the deployer (save both in `infrastructure/`) |
 | `IBM_CLOUD_API_KEY` needed? | Yes | Only with `--code-engine` or `inspect_code_engine.sh` |
 | Script | `deploy_code_engine_oauth2.sh` | `import_existing_deployment.sh` |
-| First step | Clone the infrastructure repo at `v6.2.3` ([Guide 1.2](./1-galaxium_setup.md)) | Copy the deployer's files, do not clone |
+| First step | Clone the infrastructure repo at `v6.2.4` ([Guide 1.2](./1-galaxium_setup.md)) | Copy the deployer's files, do not clone |
 | Details | [Guide 1.1 – 1.7](./1-galaxium_setup.md) | [Guide 1.8](./1-galaxium_setup.md) |
 
 Both paths write `infrastructure/galaxium-endpoints.env`. Everything after that is identical. See [infrastructure/README.md](./infrastructure/README.md).
@@ -146,7 +146,7 @@ cp watsonx-orchestrate-adk/.env_template watsonx-orchestrate-adk/.env   # set WX
 # Path A: deploy from scratch
 (cd infrastructure \
   && git clone https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro.git \
-  && cd galaxium-travels-infrastructure-tsuedbro && git checkout v6.2.3)  # first step: clone the infrastructure repo
+  && cd galaxium-travels-infrastructure-tsuedbro && git checkout v6.2.4)  # first step: clone the infrastructure repo
 cp infrastructure/.env_template infrastructure/.env                      # set IBM_CLOUD_API_KEY
 bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh
 
@@ -243,7 +243,7 @@ An application that has scaled to zero is not charged. **Keycloak never scales t
 | **Incoming HTTP calls** | Each request to the Keycloak, MCP server or booking API endpoint. Internal traffic within the project is free. |
 
 The Galaxium stack deploys several applications (Keycloak, MCP server, Booking API, HR API and two web UIs).
-Default sizes in the upstream `deploy.env.oauth2.template` (`v6.2.3`): Keycloak 1 vCPU / 2 GB, services 1 vCPU / 1 GB, web UIs 1 vCPU / 1 GB.
+Default sizes in the upstream `deploy.env.oauth2.template` (`v6.2.4`): Keycloak 1 vCPU / 2 GB, services 1 vCPU / 1 GB, web UIs 1 vCPU / 1 GB.
 
 - **One-time deployment cost (Path A):** several minutes of build time per application.
 - **Idle cost:** **not zero.** Keycloak (1 vCPU / 2 GB) keeps running. Only the MCP server, the APIs and the web UIs drop to zero.
@@ -285,7 +285,7 @@ For current plan details and pricing, see <https://www.ibm.com/products/watsonx-
 | Component | Version | License |
 |---|---|---|
 | `ibm-watsonx-orchestrate` | `2.18.2` | MIT |
-| Galaxium infrastructure repository | `v6.2.3` | Apache-2.0 |
+| Galaxium infrastructure repository | `v6.2.4` | Apache-2.0 |
 | Keycloak (`quay.io/keycloak/keycloak`) | `26.0` | Apache-2.0 |
 | CLI tools | `ibmcloud` + code-engine plugin, `git`, `curl`, `jq`, `python3`, `kubectl` | Installed by you, not redistributed. See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) |
 

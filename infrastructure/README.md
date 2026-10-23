@@ -3,7 +3,7 @@
 Everything here targets **IBM Code Engine** and **OAuth2 (Keycloak, `client_credentials`)** only.
 The runnable stack comes from the separate repository
 [galaxium-travels-infrastructure-tsuedbro](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro),
-release `v6.2.3` (see its `deployment/ibm-code-engine/DEPLOY-PATH-B-OAUTH2.md`).
+release `v6.2.4` (see its `deployment/ibm-code-engine/DEPLOY-PATH-B-OAUTH2.md`).
 
 > **Naming:** "Path A" and "Path B" in *this* repository mean **A = deploy** and **B = import an existing deployment**.
 > The "Path B" in the upstream file name is the upstream name of its OAuth2 Code Engine variant (the one Path A deploys). They are unrelated.

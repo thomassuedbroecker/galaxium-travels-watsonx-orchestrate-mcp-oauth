@@ -11,7 +11,7 @@ This guide covers two paths:
 
 The runnable stack comes from
 [galaxium-travels-infrastructure-tsuedbro](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro),
-release `v6.2.3` (Code Engine Path B, OAuth2).
+release `v6.2.4` (Code Engine Path B, OAuth2).
 
 > **Cost notice:** Deploying the stack creates billable resources on IBM Cloud Code Engine.
 > Charges apply for build time (one-time, Path A only), running application instances (vCPU-hours + GB-hours),
@@ -36,7 +36,7 @@ No container runtime is needed. Code Engine builds the images from source
 
 ## 1.2 Clone The Infrastructure Repository (First Step Of Path A)
 
-This guide is written for release `v6.2.3` of the infrastructure repository.
+This guide is written for release `v6.2.4` of the infrastructure repository.
 
 From the root of this repository:
 
@@ -44,7 +44,7 @@ From the root of this repository:
 cd infrastructure
 git clone https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro.git
 cd galaxium-travels-infrastructure-tsuedbro
-git checkout v6.2.3
+git checkout v6.2.4
 cd ../..
 ```
 
@@ -53,7 +53,7 @@ If you already cloned it earlier, just enter the directory and check out the rel
 ```sh
 cd infrastructure/galaxium-travels-infrastructure-tsuedbro
 git fetch --tags
-git checkout v6.2.3
+git checkout v6.2.4
 cd ../..
 ```
 
@@ -79,7 +79,7 @@ bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh
 
 What the script does:
 
-1. Uses the clone from §1.2 (clones it if missing) and checks out `v6.2.3`.
+1. Uses the clone from §1.2 (clones it if missing) and checks out `v6.2.4`.
 2. Creates `deploy.env.oauth2` from the template and **generates** the Keycloak admin password, the OAuth2 client secret, the Flask secret and the demo user password.
 3. Replaces the demo secrets in the cloned Keycloak realm file (client secret, demo user password, `booking-api` secret) with generated values, because the realm is imported into Keycloak at deployment time and the client secret must match `OIDC_CLIENT_SECRET`.
 4. Runs the upstream `deploy-stack-oauth2.sh` (steps `00 → 06`): project, secrets, Keycloak, services, Keycloak client sync, summary.

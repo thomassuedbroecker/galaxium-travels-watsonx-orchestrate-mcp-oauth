@@ -38,7 +38,7 @@ fi
 IBM_CLOUD_REGION="${IBM_CLOUD_REGION:-us-south}"
 IBM_CLOUD_RESOURCE_GROUP="${IBM_CLOUD_RESOURCE_GROUP:-default}"
 CE_PROJECT_NAME="${CE_PROJECT_NAME:-galaxium-travels-oauth2}"
-INFRA_TAG="${INFRA_TAG:-v6.2.3}"
+INFRA_TAG="${INFRA_TAG:-v6.2.4}"
 
 case "${ACTION}" in
   deploy|prepare|endpoints) ;;
