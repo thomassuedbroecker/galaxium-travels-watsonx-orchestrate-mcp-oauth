@@ -54,6 +54,14 @@ echo "${ACCESS_TOKEN}" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq
 
 Expected: `iss` equals `${GALAXIUM_KEYCLOAK_URL}/realms/galaxium` and `aud` contains `booking-api`.
 
+This token exchange authenticates with the `web-app-proxy` client (`GALAXIUM_OIDC_CLIENT_ID`) via Keycloak's `clients` authentication flow and requests access for the `booking-api` audience (see [Keycloak Realm and Authentication Configuration in Guide 1](./1-galaxium_setup.md#16-keycloak-realm-and-authentication-configuration)).
+
+![The JWT access token](images/oauth-01.png)
+
+When the MCP server receives an authenticated request, it verifies the token's signature via JWKS and checks the claims (`iss`, `aud`, `exp`):
+
+![The MCP server checks the token](images/oauth-02.png)
+
 ## 2.5 `initialize`
 
 ```sh

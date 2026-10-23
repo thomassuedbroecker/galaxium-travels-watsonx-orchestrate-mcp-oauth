@@ -5,7 +5,7 @@ watsonx Orchestrate instance with the OAuth 2.0 `client_credentials` flow, and i
 booking example agent.
 
 Use it after [1-galaxium_setup.md](./1-galaxium_setup.md) (either Path A — deploy from scratch,
-or Path B — already deployed via §1.8) and
+or Path B — already deployed via §1.9) and
 [3-watsonx-orchestrate-adk-setup.md](./3-watsonx-orchestrate-adk-setup.md).
 
 Both paths produce the same `infrastructure/galaxium-endpoints.env` file. This guide reads
@@ -31,7 +31,20 @@ Galaxium MCP server on Code Engine (AUTH_MODE=oauth2)
 ```
 
 Because both systems are public HTTPS endpoints, watsonx Orchestrate reaches Keycloak and
-the MCP server directly. No LAN IP, VM networking or issuer rewriting is needed.
+the MCP server directly. No LAN IP, VM networking or issuer rewriting is needed. Keycloak validates the client credentials against the `web-app-proxy` client (`GALAXIUM_OIDC_CLIENT_ID`) via the `clients` authentication flow, issuing a JWT access token targeted for `booking-api` (see [Keycloak Realm and Authentication Configuration](./1-galaxium_setup.md#16-keycloak-realm-and-authentication-configuration)).
+
+> **Why is `--client-id` set to `web-app-proxy`?**
+> The upstream infrastructure repository provides `web-app-proxy` out-of-the-box with `client_credentials` grant enabled and a configured secret. To avoid manual realm edits in Keycloak, watsonx Orchestrate reuses this client in the demo. In production, you would create a dedicated client such as `watsonx-orchestrate`.
+
+### Token Structure and Verification
+
+The JWT access token issued by Keycloak contains the required `iss`, `aud`, and `exp` claims:
+
+![The JWT access token](images/oauth-01.png)
+
+When watsonx Orchestrate sends requests to the MCP server with the bearer token, the MCP server validates the signature against Keycloak's JWKS and verifies the claims:
+
+![The MCP server checks the token](images/oauth-02.png)
 
 | Setting | Value |
 |---|---|
@@ -103,6 +116,10 @@ for ENVIRONMENT in draft live; do
     --token-url ${GALAXIUM_TOKEN_URL}
 done
 ```
+
+In the watsonx Orchestrate web UI (or after running the automation script), the resulting connection configuration for the `draft` and `live` environments maps directly to these parameters:
+
+![watsonx Orchestrate Connection Configuration](images/wxo-01.png)
 
 #### Import The MCP Toolkit
 

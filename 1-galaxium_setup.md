@@ -2,10 +2,10 @@
 
 This guide covers two paths:
 
-- **Path A — Deploy from scratch** (§1.1 – §1.7): clone the infrastructure repository first, then
+- **Path A — Deploy from scratch** (§1.1 – §1.8): clone the infrastructure repository first, then
   provision Keycloak, the Booking MCP server, the Booking REST API, the HR API and both web UIs
   on IBM Code Engine with one script.
-- **Path B — Already deployed from another repository** (§1.8): the infrastructure repository is
+- **Path B — Already deployed from another repository** (§1.9): the infrastructure repository is
   **not** cloned here. You copy the deployer's `deploy.env.oauth2` and the `deployment-links.env`
   export, and `import_existing_deployment.sh` writes `galaxium-endpoints.env`.
 
@@ -17,7 +17,7 @@ release `v6.2.4` (Code Engine Path B, OAuth2).
 > Charges apply for build time (one-time, Path A only), running application instances (vCPU-hours + GB-hours),
 > and incoming HTTP requests. The MCP server, APIs and web UIs scale to zero when idle, but **Keycloak is kept running
 > (`min-scale 1`)**, so there is a continuous charge between test sessions until you tear the stack down.
-> Run the teardown script (§1.6) when you are done. For a full breakdown see the
+> Run the teardown script (§1.7) when you are done. For a full breakdown see the
 > [Cost Estimate section in the README](./README.md#cost-estimate).
 
 ## 1.1 Prerequisites
@@ -100,13 +100,48 @@ The first deployment takes several minutes. Add `CE_DEBUG=1` in front of the com
 | `GALAXIUM_TOKEN_URL` | `--token-url` of the watsonx Orchestrate connection |
 | `GALAXIUM_MCP_BASE_URL` | `--url` of the connection (server root) |
 | `GALAXIUM_MCP_URL` | `--url` of the toolkit import (`.../mcp`) |
-| `GALAXIUM_OIDC_CLIENT_ID` | `web-app-proxy` |
+| `GALAXIUM_OIDC_CLIENT_ID` | `web-app-proxy` (OAuth2 client ID for requesting tokens) |
 | `GALAXIUM_OIDC_CLIENT_SECRET` | generated, never committed |
 
 If a Code Engine URL changes, rewrite the file with
 `bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh endpoints`.
 
-## 1.6 Other Actions
+## 1.6 Keycloak Realm And Authentication Configuration
+
+When Keycloak is deployed on IBM Code Engine, it automatically imports the `galaxium` realm configuration containing the client settings and authentication flows required for OAuth2 `client_credentials` authentication.
+
+### Understanding Client ID (`web-app-proxy`) vs Audience (`booking-api`)
+
+In the Galaxium OAuth2 architecture, there is a clear distinction between the **caller client** and the **target resource audience**:
+
+| Configuration Key | Value | Role in this setup |
+|---|---|---|
+| `KEYCLOAK_REALM` | `galaxium` | The Keycloak realm that issues and signs tokens |
+| `OIDC_CLIENT_ID` (`GALAXIUM_OIDC_CLIENT_ID`) | `web-app-proxy` | The **calling client** configured with credentials (`OIDC_CLIENT_SECRET`). watsonx Orchestrate and test scripts authenticate as this client when requesting a token via `grant_type=client_credentials`. |
+| `OIDC_AUDIENCE` | `booking-api` | The **target resource audience**. Injected into the JWT `aud` claim by Keycloak. The MCP server checks that `aud` contains `booking-api` before executing any tool call. |
+
+> **Why is the client ID named `web-app-proxy` when watsonx Orchestrate is the caller?**
+> The upstream Galaxium infrastructure repository pre-configures Keycloak with `web-app-proxy` as its machine-to-machine client for `client_credentials`. To avoid manual Keycloak configuration during the lab, this guide reuses `web-app-proxy` as the client identity for the watsonx Orchestrate connection. In a custom production deployment, you would typically create a dedicated client such as `watsonx-orchestrate`.
+
+### Keycloak Client Definitions
+
+Under **Manage** &rarr; **Clients**, Keycloak lists the OpenID Connect (OIDC) clients registered in the `galaxium` realm. `booking-api` represents the target API resource, while `web-app-proxy` provides client credentials authentication:
+
+![Keycloak Clients List - booking-api](images/keycloak-01.png)
+
+### Client Authentication Flow
+
+Under **Configure** &rarr; **Authentication** &rarr; **Flows**, Keycloak provides the built-in `clients` authentication flow ("Base authentication for clients") used to authenticate machine-to-machine client requests.
+
+![Keycloak Authentication Flows - clients flow](images/keycloak-02.png)
+
+### Flow Details (`Client Id and Secret`)
+
+In the **Flow details** for `Clients`, the authentication steps include `Client Id and Secret` (configured as `Alternative`). This allows clients to authenticate using HTTP Basic authentication or request body parameters when requesting tokens with `grant_type=client_credentials`.
+
+![Keycloak Flow Details - Client Id and Secret](images/keycloak-03.png)
+
+## 1.7 Other Actions
 
 ```sh
 bash infrastructure/path-a-deploy/deploy_code_engine_oauth2.sh prepare     # clone + generate env file only
@@ -137,7 +172,7 @@ Teardown (keeps the Code Engine project, deletes applications, configmaps and se
 bash infrastructure/galaxium-travels-infrastructure-tsuedbro/deployment/ibm-code-engine/teardown-stack-oauth2.sh
 ```
 
-## 1.7 Common Problems
+## 1.8 Common Problems
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -148,7 +183,7 @@ bash infrastructure/galaxium-travels-infrastructure-tsuedbro/deployment/ibm-code
 
 Reference: `deployment/ibm-code-engine/DEPLOY-PATH-B-OAUTH2.md` in the infrastructure repository.
 
-## 1.8 Already Deployed — Use A Deployment From Another Repository
+## 1.9 Already Deployed — Use A Deployment From Another Repository
 
 If the stack is already running (deployed by someone else, or from another repository), skip
 §1.2 – §1.4 and do **not** clone the infrastructure repository here. You only need

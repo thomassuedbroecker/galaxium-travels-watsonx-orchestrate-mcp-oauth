@@ -88,6 +88,18 @@ graph LR
 
 The MCP tool data is stored in the MCP server's own SQLite file (checked in the upstream repository at `v6.2.4`), so bookings are not shared with the Booking REST API and are lost when the MCP container restarts.
 
+### OAuth2 Client vs Target Audience
+
+To prevent confusion between the client that requests tokens and the target resource audience that validates them:
+
+| Entity | Name / Value | Configured In | Purpose |
+|---|---|---|---|
+| **Realm** | `galaxium` | Keycloak, `KEYCLOAK_REALM` | Keycloak realm that issues and signs JWTs |
+| **Requester Client ID** | `web-app-proxy` | `OIDC_CLIENT_ID` / `GALAXIUM_OIDC_CLIENT_ID` | Client identity with secret used by watsonx Orchestrate and test scripts to obtain tokens |
+| **Target Audience** | `booking-api` | `OIDC_AUDIENCE`, Keycloak client | Injected as `aud: booking-api` in the JWT; verified by the MCP server on incoming tool calls |
+
+> **Note on `web-app-proxy`:** In this lab guide, watsonx Orchestrate reuses the pre-provisioned `web-app-proxy` client identity from Keycloak to simplify setup. In a custom production environment, you would create a dedicated client (e.g. `watsonx-orchestrate`).
+
 ## Why These Choices (Mini ADR)
 
 **Status:** Accepted for this guide.
@@ -134,7 +146,7 @@ All other secrets (Keycloak admin password, OAuth2 client secret, Flask secret) 
 | `IBM_CLOUD_API_KEY` needed? | Yes | Only with `--code-engine` or `inspect_code_engine.sh` |
 | Script | `deploy_code_engine_oauth2.sh` | `import_existing_deployment.sh` |
 | First step | Clone the infrastructure repo at `v6.2.4` ([Guide 1.2](./1-galaxium_setup.md)) | Copy the deployer's files, do not clone |
-| Details | [Guide 1.1 – 1.7](./1-galaxium_setup.md) | [Guide 1.8](./1-galaxium_setup.md) |
+| Details | [Guide 1.1 – 1.8](./1-galaxium_setup.md) | [Guide 1.9](./1-galaxium_setup.md) |
 
 Both paths write `infrastructure/galaxium-endpoints.env`. Everything after that is identical. See [infrastructure/README.md](./infrastructure/README.md).
 
@@ -270,7 +282,7 @@ For current plan details and pricing, see <https://www.ibm.com/products/watsonx-
 
 ### Minimising Cost During The Demo
 
-1. Run the teardown script ([Guide 1.6](./1-galaxium_setup.md)) as soon as you are done with the Code Engine stack. Clean the watsonx Orchestrate side with `wxo_cleanup.sh` ([Guide 4.5](./4-watsonx-orchestrate-adk-add-oauth2-mcp.md)).
+1. Run the teardown script ([Guide 1.7](./1-galaxium_setup.md)) as soon as you are done with the Code Engine stack. Clean the watsonx Orchestrate side with `wxo_cleanup.sh` ([Guide 4.5](./4-watsonx-orchestrate-adk-add-oauth2-mcp.md)).
 2. Keep the upstream scaling defaults. Keycloak stays at `min-scale 1` by design (the MCP server needs it), so the only way to stop its cost is the teardown. Do not raise `SERVICE_MIN_SCALE` or `WEB_MIN_SCALE` above `0`.
 3. If you only want to verify watsonx Orchestrate (guides 3 and 4) and the stack is already deployed by someone else, use **Path B** — no deployment cost on your account.
 

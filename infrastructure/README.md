@@ -20,7 +20,7 @@ Both paths end with the same file, `galaxium-endpoints.env`. Everything after it
 | You provide | `IBM_CLOUD_API_KEY` | `deploy.env.oauth2` + `deployment-links.env` (copied from the deployer, saved in `infrastructure/`) |
 | `IBM_CLOUD_API_KEY` needed? | Yes | Only for `import_existing_deployment.sh --code-engine` and `inspect_code_engine.sh` |
 | Folder | `path-a-deploy/` | `path-b-existing/` |
-| Guide | [1.1 – 1.7](../1-galaxium_setup.md) | [1.8](../1-galaxium_setup.md) |
+| Guide | [1.1 – 1.8](../1-galaxium_setup.md) | [1.9](../1-galaxium_setup.md) |
 
 ```sh
 # Path A
@@ -75,7 +75,7 @@ Scripts that exist only inside the infrastructure repo itself are in `deployment
 | Script | Purpose |
 |---|---|
 | `export-deployment.sh --oauth2` | Export live links and configuration (no secrets) to `generated/exports/` |
-| `teardown-stack-oauth2.sh` | **Deletes** the applications, configmaps and secrets (keeps the Code Engine project). Run it when you are done to stop Code Engine costs, see [Guide 1.6](../1-galaxium_setup.md) and the [cost estimate](../README.md#cost-estimate). |
+| `teardown-stack-oauth2.sh` | **Deletes** the applications, configmaps and secrets (keeps the Code Engine project). Run it when you are done to stop Code Engine costs, see [Guide 1.7](../1-galaxium_setup.md) and the [cost estimate](../README.md#cost-estimate). |
 
 On Path B, run these from the repository that did the deployment. Do not tear down a stack that someone else still uses.
 
