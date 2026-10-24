@@ -45,12 +45,16 @@ The watsonx Orchestrate [connections overview](https://developer.watson-orchestr
 
 ## 2.4 Request A `client_credentials` Token
 
-Example base on the [deploy.env.oauth2.template](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro/blob/main/deployment/ibm-code-engine/deploy.env.oauth2.template) example in the [infrastructure repository](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro/tree/main/deployment/ibm-code-engine).
+The following code is an example of the OAuth2 client credentials that the token request uses. The values are based on the [deploy.env.oauth2.template](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro/blob/main/deployment/ibm-code-engine/deploy.env.oauth2.template) file in the [infrastructure repository](https://github.com/thomassuedbroecker/galaxium-travels-infrastructure-tsuedbro/tree/main/deployment/ibm-code-engine).
 
 ```sh
 GALAXIUM_OIDC_CLIENT_ID=web-app-proxy
 GALAXIUM_OIDC_CLIENT_SECRET=web-app-proxy-secret
 ```
+
+These are the template's default demo values, not real secrets. If you changed the client ID or secret when you deployed, use your own values instead. In a real deployment, never commit a client secret to a repository.
+
+The following commands send these credentials to the token endpoint (`GALAXIUM_TOKEN_URL`) with HTTP Basic authentication and the `client_credentials` grant. They store the returned access token in `ACCESS_TOKEN`, then decode the JWT payload and print the `iss`, `aud` and `exp` claims:
 
 ```sh
 ACCESS_TOKEN="$(curl -fsS -X POST "${GALAXIUM_TOKEN_URL}" \
