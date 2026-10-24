@@ -21,6 +21,6 @@ echo "Using $(${PYTHON} --version) to create .venv"
 [[ -d .venv ]] || run_step 120 "create .venv" "${PYTHON}" -m venv .venv
 # shellcheck disable=SC1091
 source .venv/bin/activate
-run_step 180 "upgrade pip" python -m pip install --quiet --upgrade pip
-run_step 600 "install ibm-watsonx-orchestrate==${ADK_VERSION}" python -m pip install --quiet "ibm-watsonx-orchestrate==${ADK_VERSION}"
+run_step 180 "upgrade pip" "${PYTHON}" -m pip install --quiet --upgrade pip
+run_step 600 "install ibm-watsonx-orchestrate==${ADK_VERSION}" "${PYTHON}" -m pip install --quiet "ibm-watsonx-orchestrate==${ADK_VERSION}"
 orchestrate --version
